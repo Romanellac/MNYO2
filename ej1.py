@@ -65,30 +65,36 @@ EJERCICIO 2:
 ------------
 
 CALCULO:
-- HAY QUE DESEMPAQUETAR EL SISTEMA DE ODES***
+- HAY QUE DESEMPAQUETAR EL SISTEMA DE ODES Y APLICARLE LOS MÉTODOS***
 
 NUMERICAMENTE:
 - Método numérico que mejor dio en la anterior, aproximar N1 y N2.
 - P. eq. (dN/dt = 0) -> iscolinas cero, cuando se cruzan son los p.eq. del sist.
-    - luego de desempaquetar el sistema de odes***
-    - ¿Cómo se obtienen las isoclinas cero a partir de los puntos de equilibrio de las odes de un sistema de odes? CHATGPT
+    - luego de desempaquetar el sistema de odes y aproximar N1 y N2!
+    - ¿Cómo se obtienen las isoclinas cero a partir de los puntos de equilibrio de las odes de un sistema de odes? IMAG***
 - Formas de las isoclinas y determinar p.eq del sistema.
-    - luego de desempaquetar el sistema de odes***
+    - luego de desempaquetar el sistema de odes, buscar inters entre isoclinas.
 
 
-GRAFICOS:
+GRÁFICOS:
 - dN1/dt, dN2/dt.
 Cond. iniciales a variar: N10, N20, r1, r2, k1, k2, alhpa12, alpha21.
-- 4 tipos de gráficos dependiendo de k1, k2, alpha12, alpha21.
+- 4 tipos de gráficos dependiendo de k1, k2, alpha12, alpha21. Cómo hallamos bien los 4 tipos? ir probando?***
     - Variarles los N10 y N20, graficar N1(t) y N2(t).
 
 {Comparar y concluir las características de cada gráfico con diferentes
 condiciones iniciales}.
 
 '''
-
-
-
+#VARIACIÓN DE LAS CONDICIONES INICIALES:
+N10_arr = [10, 25, 50, 75, 100, 200, 500]
+N20_arr = [10, 25, 50, 75, 100, 200, 500]
+r1_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
+r2_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
+k1_arr = [ 25, 50, 75, 100, 200, 500]
+k2_arr = [ 25, 50, 75, 100, 200, 500]
+alpha12_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
+alpha21_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
 
 
 '''
@@ -102,7 +108,7 @@ NUMERICAMENTE:
 - IDEM.
 
 GRAFICOS:
-- N(t), P(t).
+- N(t), P(t). IDEM
 - P vs N: Dinámica para distintas cond iniciales.
 Cond. iniciales a variar: r, 1, alpha, beta, k.
 
