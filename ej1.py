@@ -1,116 +1,314 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
+def error_absoluto(real, aprox):
+    return np.abs(real - aprox)
 
-#CHEQUEAR SI EULER ESTA BIEN (lo del arange)***.
+# ------------------- Metodos para obtener solucion numerica ----------------------
 def Euler(a, b, N, alpha, f):
-    h = (b-a)/N
-    t = np.arange(a, b, h)
-    w = np.zeros((len(t), len(alpha)))
+    h = (b - a) / N
+    t = np.linspace(a, b, N+1)
+    w = np.zeros((len(t), len(alpha))) 
     w[0] = alpha
     
     for i in range(1,N+1):
-        w[i] = w + h*f(t[i-1],w[i-1])
-        t[i] = a + i*h
-        
-    return (t, w)
+        w[i] = w[i-1] + h * f(t[i-1], w[i-1])
+    return t, w
 
-#CHEQUEAR SI RK4 ESTA BIEN (lo del arange y lo del t dentro del loop)***.
 def RK4(a, b, N, alpha, f):
-    h = (b-a)/N
-    t = np.arange(a, b, h)
+    h = (b - a) / N
+    t = np.linspace(a, b, N+1)
     w = np.zeros((len(t), len(alpha)))
     w[0] = alpha
     
     for i in range(1, N+1):
         k1 = h * f(t[i-1],w[i-1])
-        k2 = h * f(t[i-1]+(h/2), 2 + k1/2)
-        k3 = h * f(t[i-1]+(h/2), 2 + k2/2)
-        k4 = h * f(t[i]+h, w[i-1] + k3)
+        k2 = h * f(t[i-1]+(h/2), w[i-1] + k1/2)
+        k3 = h * f(t[i-1]+(h/2), w[i-1] + k2/2) 
+        k4 = h * f(t[i], w[i-1] + k3)
         w[i] = w[i-1] + (k1 + 2*k2 + 2*k3 + k4)/6
     
-    return (t,w)
+    return t, w
 
-'''
-EJERCICIO 1:
-------------
+# ----------------- Definicion de EDOs que quiero encontrar su solucion numericamente ------------------
+def odeExponencial(t, N):
+    # r es una variable global.
+    return r * N
 
-CALCULO:
-· Buscar solución exacta de las ecuaciones diferenciales.
+def odeLogistica(t, N):
+    # K y r son variables globales.
+    return r*N * ((K-N) / K)
 
-NUMERICAMENTE:
-- Euler
-- RK2 y RK4.
-- P. eq. (dN/dt = 0):
-    - EXP: N(t) = 0! Ver según el método en qué t es.
-    - LOG: N(t) = 0 o N(t) = k. 
+# ----------------- Solcuion analitica de EDOs ------------------
+def solAnaliExponencial(r, N0, t):
+    w = []
+    for i in range(len(t)):
+       w.append(N0 * np.exp(r * t[i]))
+    return w
 
-GRAFICOS:
-- N(t) {graficamos según la aproximación}.
-- dN/dt (N) {graficamos utilizando el N de la aproximación}.
-Cond. iniciales a variar: N0, r, k (qué significa k para la dinámica
-del problema, ver bien cómo cambia).
+def solAnaliLogistica(r, K, t):
+    w = []
+    for i in range(len(t)):
+        wi = (K*np.exp(r * t[i]))/(1+np.exp(r * t[i]))
+        w.append(wi)
+        #(C1*K*np.exp(r * t[i]))/(1+C1*np.exp(r * t[i])) El C1 viene de una CTE que aparece cuando, en una parte de la cuenta, se integra r 
+        # respecto de t, pero como nuestro t0 = 0, dicha CTE = 0, y el término C1 = e^CTE = 1.
+    return w
 
-{Comparar y concluir las características de cada gráfico con diferentes
-condiciones iniciales}.{Decir qué método aproxima mejor}
+# ----------------- eleccion de condiciones iniciales (Semillas) ------------------------
+N0_arr = [10, 25, 50, 75, 100, 200, 500] # poblacion inicial
+r_arr = [-1, -0.75, -0.5, -0.25, 0, 0.1, 0.25, 0.5, 0.75, 1] 
+k_arr = [ 25, 50, 75, 100, 200, 500] #maxima cantidad de poblacion
 
-'''
+# defino condiciones para un caso especifico
+a = 0
+b = 100
+N0 = 10000
+N = 100
+r = 0.1
+K = 50000
 
-#VARIACIÓN DE LAS CONDICIONES INICIALES:
-N0_arr = [10, 25, 50, 75, 100, 200, 500]
-r_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
-k_arr = [ 25, 50, 75, 100, 200, 500]
+#*** modularizar código***
+def main():
 
-'''
-EJERCICIO 2:
-------------
+    # Ecuación diferencial exponencial:
+    # ---------------------------------
 
-CALCULO:
-- HAY QUE DESEMPAQUETAR EL SISTEMA DE ODES Y APLICARLE LOS MÉTODOS***
+    # Resolver la ecuación diferencial con Euler
+    t_euler_expo, w_euler_expo = Euler(a, b, N, [N0], odeExponencial)
 
-NUMERICAMENTE:
-- Método numérico que mejor dio en la anterior, aproximar N1 y N2.
-- P. eq. (dN/dt = 0) -> iscolinas cero, cuando se cruzan son los p.eq. del sist.
-    - luego de desempaquetar el sistema de odes y aproximar N1 y N2!
-    - ¿Cómo se obtienen las isoclinas cero a partir de los puntos de equilibrio de las odes de un sistema de odes? IMAG***
-- Formas de las isoclinas y determinar p.eq del sistema.
-    - luego de desempaquetar el sistema de odes, buscar inters entre isoclinas.
+    # Resolver la ecuación diferencial con RK4
+    t_rk4_expo, w_rk4_expo = RK4(a, b, N, [N0], odeExponencial)
 
+    # Resolver la ecuación diferencial Analiticamente
+    t_anali_expo = np.linspace(a, b, N+1)
+    w_anali_expo = solAnaliExponencial(r, N0, t_anali_expo)
+    
+    # Error absoluto de Euler y RK4
+    
+    err_abs_euler_expo = error_absoluto(w_anali_expo, w_euler_expo[:, 0])
 
-GRÁFICOS:
-- dN1/dt, dN2/dt.
-Cond. iniciales a variar: N10, N20, r1, r2, k1, k2, alhpa12, alpha21.
-- 4 tipos de gráficos dependiendo de k1, k2, alpha12, alpha21. Cómo hallamos bien los 4 tipos? ir probando?***
-    - Variarles los N10 y N20, graficar N1(t) y N2(t).
-
-{Comparar y concluir las características de cada gráfico con diferentes
-condiciones iniciales}.
-
-'''
-#VARIACIÓN DE LAS CONDICIONES INICIALES:
-N10_arr = [10, 25, 50, 75, 100, 200, 500]
-N20_arr = [10, 25, 50, 75, 100, 200, 500]
-r1_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
-r2_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
-k1_arr = [ 25, 50, 75, 100, 200, 500]
-k2_arr = [ 25, 50, 75, 100, 200, 500]
-alpha12_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
-alpha21_arr = [0, 0.1, 0.25, 0.5, 0.75, 1]
+    err_abs_RK4_expo = error_absoluto(w_anali_expo, w_rk4_expo[:, 0])
 
 
-'''
-EJERCICIO 3:
-------------
+    # ------------------------------------ Grafico N vs t ---------------------------------------
+    # Configurar subplots
+    fig, axs = plt.subplots(3, 1, figsize=(8, 6))
 
-CALCULO:
-- isoclinas.
+    # Graficar solución numérica Euler
+    axs[0].plot(t_euler_expo, w_euler_expo[0:], label='Solución Numérica(Euler)')
+    axs[0].set_xlabel('Tiempo (t)')
+    axs[0].set_ylabel('Tamaño Poblacional (N)')
+    axs[0].set_title('(Exponencial) Solución Numérica - Método de Euler')
+    axs[0].legend()
+    axs[0].grid(True)
 
-NUMERICAMENTE:
-- IDEM.
+    # Graficar solución numérica RK4
+    axs[1].plot(t_rk4_expo, w_rk4_expo[0:], label='Solución Numérica (RK4)', color='green')
+    axs[1].set_xlabel('Tiempo (t)')
+    axs[1].set_ylabel('Tamaño Poblacional (N)')
+    axs[1].set_title('(Exponencial) Solución Numérica - Método de RK4')
+    axs[1].legend()
+    axs[1].grid(True)
 
-GRAFICOS:
-- N(t), P(t). IDEM
-- P vs N: Dinámica para distintas cond iniciales.
-Cond. iniciales a variar: r, 1, alpha, beta, k.
+    # Graficar solución analítica
+    axs[2].plot(t_anali_expo , w_anali_expo, label='Solución Analítica', color='red')
+    axs[2].set_xlabel('Tiempo (t)')
+    axs[2].set_ylabel('Tamaño Poblacional (N)')
+    axs[2].set_title('(Exponencial) Solución Analítica - Ecuación Diferencial')
+    axs[2].legend()
+    axs[2].grid(True)
 
-{}
-'''
+    # Ajustar el espacio entre subplots
+    plt.tight_layout()
+    plt.show()
+
+    # ------------------------------------ Grafico N' vs N ---------------------------------------
+    # Calcular n' para cada t_anali
+    N_prime_anali_expo = [odeExponencial(t_anali_expo[i], w_anali_expo[i]) for i in range(len(t_anali_expo))]
+    # Configurar subplots con tamaño ajustado
+    fig, axs = plt.subplots(3, 1, figsize=(10, 8))
+
+    # Graficar dN/dt vs N para Euler
+    axs[0].plot(w_euler_expo[:, 0], N_prime_anali_expo, label='Euler')
+    axs[0].set_xlabel('Tamaño Poblacional (N)')
+    axs[0].set_ylabel('Variación Poblacional (dN/dt)')
+    axs[0].set_title('(Exponencial) Variación Poblacional - Método de Euler')
+    axs[0].legend()
+    axs[0].grid(True)
+
+    # Graficar dN/dt vs N para RK4
+    axs[1].plot(w_rk4_expo[:, 0], N_prime_anali_expo, label='RK4')
+    axs[1].set_xlabel('Tamaño Poblacional (N)')
+    axs[1].set_ylabel('Variación Poblacional (dN/dt)')
+    axs[1].set_title('(Exponencial) Variación Poblacional - Método de RK4')
+    axs[1].legend()
+    axs[1].grid(True)
+
+    # Graficar solución analítica
+    axs[2].plot(w_anali_expo, N_prime_anali_expo, label='Analitica')
+    axs[2].set_xlabel('Tamaño Poblacional (N)')
+    axs[2].set_ylabel('Variación Poblacional (dN/dt)')
+    axs[2].set_title('(Exponencial) Variación Poblacional - Solucion Analitica')
+    axs[2].legend()
+    axs[2].grid(True)
+
+    # Ajustar el espacio entre subplots
+    plt.tight_layout()
+    plt.show()
+    
+    # ------------------------------------ Gráfico errores absolutos -----------------------------
+    
+    # Configurar los subplots de los errores
+    fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+
+    # Graficar el error absoluto (solución analítica vs Euler).
+    axs[0].plot(t_euler_expo, err_abs_euler_expo, label='Error absoluto (Euler)')
+    axs[0].set_xlabel('Tiempo (t)')
+    axs[0].set_ylabel('Error absoluto')
+    axs[0].set_title('Exponencial. Error absoluto, método de Euler')
+    axs[0].legend()
+    axs[0].grid(True)
+
+    # Graficar el error absoluto (solución analítica vs RK4).
+    axs[1].plot(t_rk4_expo, err_abs_RK4_expo, label='Error absoluto (RK4)')
+    axs[1].set_xlabel('Tiempo (t)')
+    axs[1].set_ylabel('Error absoluto')
+    axs[1].set_title('Exponencial. Error absoluto, método de RK4')
+    axs[1].legend()
+    axs[1].grid(True)
+
+    # Ajustar el espacio entre subplots
+    plt.tight_layout()
+    plt.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+
+    # ----------------------------------------------------------------------------------------------
+
+    # Ecuación diferencial logística:
+    # ---------------------------------
+
+    # Resolver la ecuación diferencial con Euler
+    t_euler_log, w_euler_log = Euler(a, b, N, [N0], odeLogistica)
+
+    # Resolver la ecuación diferencial con RK4
+    t_rk4_log, w_rk4_log = RK4(a, b, N, [N0], odeLogistica)
+
+    # Resolver la ecuación diferencial Analiticamente
+    t_anali_log = np.linspace(a, b, N+1)
+    w_anali_log = solAnaliLogistica(r, N0, t_anali_log)
+    
+    # Error absoluto de Euler y RK4
+    err_abs_euler_log = error_absoluto(w_anali_log, w_euler_log[:, 0])
+    err_abs_RK4_log = error_absoluto(w_anali_log, w_rk4_log[:, 0])
+
+    # ------------------------------------ Grafico N vs t ---------------------------------------
+    # Configurar subplots
+    fig, axs = plt.subplots(3, 1, figsize=(8, 6))
+
+    # Graficar solución numérica Euler
+    axs[0].plot(t_euler_log, w_euler_log[0:], label='Solución Numérica (Euler)')
+    axs[0].set_xlabel('Tiempo (t)')
+    axs[0].set_ylabel('Tamaño Poblacional (N)')
+    axs[0].set_title('(Logística) Solución Numérica - Método de Euler')
+    axs[0].legend()
+    axs[0].grid(True)
+
+    # Graficar solución numérica RK4
+    axs[1].plot(t_rk4_log, w_rk4_log[0:], label='Solución Numérica (RK4)', color='green')
+    axs[1].set_xlabel('Tiempo (t)')
+    axs[1].set_ylabel('Tamaño Poblacional (N)')
+    axs[1].set_title('(Logística) Solución Numérica - Método de RK4')
+    axs[1].legend()
+    axs[1].grid(True)
+
+    # Graficar solución analítica
+    axs[2].plot(t_anali_log , w_anali_log, label='Solución Analítica', color='red')
+    axs[2].set_xlabel('Tiempo (t)')
+    axs[2].set_ylabel('Tamaño Poblacional (N)')
+    axs[2].set_title('(Logística) Solución Analítica - Ecuación Diferencial')
+    axs[2].legend()
+    axs[2].grid(True)
+
+    # Ajustar el espacio entre subplots
+    plt.tight_layout()
+    plt.show()
+
+    # ------------------------------------ Grafico N' vs N ---------------------------------------
+    # Calcular n' para cada t_anali
+    N_prime_anali_log = [odeLogistica(t_anali_expo[i], w_anali_log[i]) for i in range(len(t_anali_expo))]
+    # Configurar subplots con tamaño ajustado
+    fig, axs = plt.subplots(3, 1, figsize=(10, 8))
+
+    # Graficar dN/dt vs N para Euler
+    axs[0].plot(w_euler_log[:, 0], N_prime_anali_log, label='Euler')
+    axs[0].set_xlabel('Tamaño Poblacional (N)')
+    axs[0].set_ylabel('Variación Poblacional (dN/dt)')
+    axs[0].set_title('(Logística) Variación Poblacional - Método de Euler')
+    axs[0].legend()
+    axs[0].grid(True)
+
+    # Graficar dN/dt vs N para RK4
+    axs[1].plot(w_rk4_log[:, 0], N_prime_anali_log, label='RK4')
+    axs[1].set_xlabel('Tamaño Poblacional (N)')
+    axs[1].set_ylabel('Variación Poblacional (dN/dt)')
+    axs[1].set_title('(Logística) Variación Poblacional - Método de RK4')
+    axs[1].legend()
+    axs[1].grid(True)
+
+    # Graficar solución analítica
+    axs[2].plot(w_anali_log, N_prime_anali_log, label='Analitica')
+    axs[2].set_xlabel('Tamaño Poblacional (N)')
+    axs[2].set_ylabel('Variación Poblacional (dN/dt)')
+    axs[2].set_title('(Logística) Variación Poblacional - Solucion Analitica')
+    axs[2].legend()
+    axs[2].grid(True)
+
+    # Ajustar el espacio entre subplots
+    plt.tight_layout()
+    plt.show()
+    
+    # ------------------------------------ Gráfico errores absolutos -----------------------------
+    
+    # Configurar los subplots de los errores
+    fig, axs = plt.subplots(2, 1, figsize=(10, 8))
+
+    # Graficar el error absoluto (solución analítica vs Euler).
+    axs[0].plot(t_euler_expo, err_abs_euler_log[0:], label='Error absoluto (Euler)')
+    axs[0].set_xlabel('Tiempo (t)')
+    axs[0].set_ylabel('Error absoluto')
+    axs[0].set_title('Logística. Error absoluto, método de Euler')
+    axs[0].legend()
+    axs[0].grid(True)
+
+    # Graficar el error absoluto (solución analítica vs RK4).
+    axs[1].plot(t_rk4_expo, err_abs_RK4_log[0:], label='Error absoluto (RK4)')
+    axs[1].set_xlabel('Tiempo (t)')
+    axs[1].set_ylabel('Error absoluto')
+    axs[1].set_title('Logística. Error absoluto, método de RK4')
+    axs[1].legend()
+    axs[1].grid(True)
+
+    # Ajustar el espacio entre subplots
+    plt.tight_layout()
+    plt.show()
+
+    #––––––––––––––––––––––––– PUNTOS DE EQUILIBIRIO, ECUACIÓN LOGÍSTICA ––––––––––––––––––––––––
+    
+    # (cálculo dN/dt = 0, analíticamente. Con dN/dt = rN(1 - N/K))
+    N_eq_1 = 0
+    N_eq_2 = K
+    
+    
+if __name__ == "__main__":
+    main() 
